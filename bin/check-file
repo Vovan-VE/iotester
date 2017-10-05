@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Usage: check-file file.io cmd [args]
+#
+# Runs `cmd [args]` passing to its stdin content of IN section from the file.
+# Output differense of actual results with expected from source file.
+# Exit successfully when actual result is same as expected.
+# Exit with failure in case of differense.
+#
+# The concept of this program is familar with `tush-check` from Tush
+# <https://github.com/darius/tush>
+# The differense is the format of processing files.
+
+case $# in
+    (0|1) echo "Usage: $(basename "$0") file cmd [args]" >&2; exit 2;;
+esac
+
+THIS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"; pwd )"
+RUN_FILE_BASE=run-file
+RUN_FILE="$THIS_DIR/$RUN_FILE_BASE"
+
+FILE="$1"
+OUT="$FILE.$$.actual.tmp~"
+
+trap 'rm "$OUT"; exit 1' 1 2 15
+
+if ! "$RUN_FILE" "$@" > "$OUT"; then
+    echo "$(basename "$0"): $RUN_FILE_BASE failed" >&2
+    exit 2
+fi
+diff -u "$FILE" "$OUT"
+rm "$OUT"

@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# Usage: update-file file.io cmd [args]
+#
+# Updates the file with the new results `cmd [args]`. Section IN from the file
+# will be passed to `cmd` stdin.
+# This program is needed to update files with respect to actual results.
+#
+# The concept of this program is familar with `tush-bless` from Tush merged with
+# its `overwrite` program.
+# <https://github.com/darius/tush>
+# The differense is the format of processing files.
+
+case $# in
+    (0|1) echo "Usage: $(basename "$0") file cmd [args]" >&2; exit 2;;
+esac
+
+THIS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"; pwd )"
+RUN_FILE_BASE=run-file
+RUN_FILE="$THIS_DIR/$RUN_FILE_BASE"
+
+FILE="$1"
+NEW="$FILE.$$.new.tmp~"
+OLD="$FILE.$$.old.tmp~"
+
+trap 'rm -f "$NEW" "$OLD"; exit 1' 1 2 15
+
+if "$RUN_FILE" "$@" > "$NEW" ; then
+    cp "$FILE" "$OLD"
+    trap '' 1 2 15
+    cp "$NEW" "$FILE"
+else
+    echo "$(basename "$0"): $RUN_FILE_BASE failed - '$FILE' was not changed" >&2
+    exit 1
+fi
+
+rm -f "$NEW" "$OLD"

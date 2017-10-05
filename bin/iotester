@@ -1,0 +1,107 @@
+#!/bin/bash
+
+# Run tests by config
+
+DEFAULT_CONFIG_FILE=./iotester.conf
+CONFIG_FILE="$DEFAULT_CONFIG_FILE"
+OPERATION_BASE=check-file
+
+if ! options=$(getopt -u -o hc:u -l help,config:,update -- "$@") ; then
+    exit 1
+fi
+
+set -- $options
+while [ $# -gt 0 ]; do
+    case "$1" in
+        (-c|--config)
+            shift
+            CONFIG_FILE="$1"
+            ;;
+
+        (-u|--update)
+            OPERATION_BASE=update-file
+            ;;
+
+        (-h|--help)
+            read -r -d '' USAGE <<USAGE
+Usage:
+
+    $(basename "$0") [options]
+    $(basename "$0") --help
+
+Description:
+
+    Runs all tests given by config.
+
+    Each path givem from a config is searched for *.io files, each of which is
+    processed with the command.
+
+    See CONFIG below.
+
+Options
+
+    -c FILE, --config=FILE
+        Use this config file. By default '$DEFAULT_CONFIG_FILE' is used.
+
+    -u, --update
+        By default each *.io file is processed with chech-file tool to check
+        if test passes. This option allows you to use update-file tool to update
+        test files with actual results.
+
+Config
+
+    Config is text file with following format:
+
+        path     command arguments
+        ...
+
+    TODO: Arguments currently cannot utilize neither quotes nor backslaches. So,
+    every group of spaces are arguments separator.
+
+USAGE
+            echo "$USAGE"
+            exit
+            ;;
+
+        (--) shift; break;;
+        (-*) echo "$(basename "$0"): unrecognized option $1" >&2; exit 1;;
+        (*)  break;;
+    esac
+    shift
+done
+
+# no arguments must left
+if [ $# -gt 0 ]; then
+    echo "$(basename "$0"): invalid usage, try --help" >&2
+    exit 1
+fi
+
+THIS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"; pwd )"
+OPERATION="$THIS_DIR/$OPERATION_BASE"
+
+if ! [ -f "$CONFIG_FILE" ]; then
+    echo "$(basename "$0"): config not found '$FILE'" >&2
+    exit 1
+fi
+
+
+(
+    WORK_DIR="$( cd "$( dirname "$CONFIG_FILE" )"; pwd )"
+
+    if ! exec {FD}<"$CONFIG_FILE" ; then
+        echo "$(basename "$0"): cannot read config '$FILE'" >&2
+        exit 1
+    fi
+
+    cd "${WORK_DIR:-.}"
+
+    while read -u $FD DIR COMMAND; do
+        [[ -n "$DIR" ]] || continue
+        if ! find "$DIR" -type f -name '*.io' -exec "$OPERATION" {} $COMMAND ';' ; then
+            echo "$(basename "$0"): find failed in '$DIR'" >&2
+            exit 1
+        fi
+    done
+
+    exec {FD}<&-
+) || exit $?

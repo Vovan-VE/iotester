@@ -1,0 +1,131 @@
+#!/bin/bash
+
+# Usage: run-file file.io cmd [args]
+#
+# Runs `cmd [args]` passing to its stdin content of IN section from the file.
+# Outputs same IN section from the file with OUT, ERR and EXIT sections
+# fullfilled with the output, stderr adn exit status respectively from cmd.
+# ERR section will be present only in case of non-empty stderr.
+# EXIT section will be present only in case of failure exit code.
+#
+# The concept of this program is same as `tush-run-raw` from Tush
+# <https://github.com/darius/tush>
+# The differense is the format of processing files.
+
+case $# in
+    (0|1) echo "Usage: $(basename "$0") file cmd [args]" >&2; exit 2;;
+esac
+
+FILE="$1"
+shift
+IFILE="$FILE.$$.in.tmp~"
+EFILE="$FILE.$$.err.tmp~"
+
+if [ '-' = "$FILE" ]; then
+    FD=0
+    IFILE="./$IFILE"
+    EFILE="./$EFILE"
+elif ! exec {FD}<"$FILE" ; then
+    echo "$(basename "$0"): cannot read file '$FILE'" >&2
+    exit 1
+fi
+
+if ! echo -n '' > "$IFILE"; then
+    echo "$(basename "$0"): cannot create/erase input temp file '$IFILE'" >&2
+    exit 1
+fi
+trap 'rm -f "$IFILE"' 0 1 2 15
+if ! echo -n '' > "$EFILE"; then
+    echo "$(basename "$0"): cannot create/erase input temp file '$EFILE'" >&2
+    exit 1
+fi
+trap 'rm -f "$IFILE" "$EFILE"' 0 1 2 15
+
+RE_DECOR_CHARS='[^[:alnum:][:space:]]'
+
+DECOR_LEFT=''
+DECOR_RIGHT=''
+IN_SECTION=''
+IS_INPUT_SECTION=''
+WAS_INPUT_HIT=''
+HEAD_DECOR=''
+while IFS='' read -r -u $FD LINE; do
+    # detect header decorator on first line
+    if [ -z "$IN_SECTION" ]; then
+        # could not use just back reference to \1
+        if ! [[ "$LINE" =~ ^($RE_DECOR_CHARS+\ *)IN(\ *$RE_DECOR_CHARS+)$ ]]; then
+            echo "$(basename "$0"): cannot detect IN section header on first line - '$FILE'" >&2
+            exit 1
+        fi
+        DECOR_LEFT="${BASH_REMATCH[1]}"
+        DECOR_RIGHT="${BASH_REMATCH[2]}"
+    fi
+
+    if [[ "$LINE" =~ ^"$DECOR_LEFT"([A-Z]+)"$DECOR_RIGHT"$ ]]; then
+        SECTION="${BASH_REMATCH[1]}"
+        case "$SECTION" in
+            (IN)
+                if [ IN = "$IN_SECTION" ]; then
+                    echo "$(basename "$0"): duplicate IN section in '$FILE'" >&2
+                    exit 1
+                fi
+                if [ -n "$IN_SECTION" ]; then
+                    echo "$(basename "$0"): section IN must be first - '$FILE'" >&2
+                    exit 1
+                fi
+
+                WAS_INPUT_HIT=1
+                ;;
+            (OUT|ERR|EXIT)
+                ;;
+            (*)
+                echo "$(basename "$0"): unknown section $SECTION - '$FILE'" >&2
+                exit 1
+                ;;
+        esac
+
+        # swithing from IN to another section
+        if [ IN = "$IN_SECTION" ]; then
+            break
+        fi
+
+        IN_SECTION="$SECTION"
+        echo "$LINE"
+    else
+        case "$IN_SECTION" in
+            ('')
+                echo "$(basename "$0"): text out of a section - '$FILE'" >&2
+                exit 1
+                ;;
+            (IN)
+                echo "$LINE"
+                echo "$LINE" >> "$IFILE"
+                ;;
+        esac
+    fi
+done
+
+if [ '0' != $FD ]; then
+    exec {FD}<&-
+fi
+
+if [ -z "$WAS_INPUT_HIT" ]; then
+    echo "$(basename "$0"): no IN section - '$FILE'" >&2
+    exit 1
+fi
+
+echo "${DECOR_LEFT}OUT$DECOR_RIGHT"
+if "$@" < "$IFILE" 2>"$EFILE"; then
+    # ok
+    EXIT_CODE=0
+    # output is already gone
+else
+    # failed
+    EXIT_CODE=$?
+    if [ -s "$EFILE" ]; then
+        echo "${DECOR_LEFT}ERR$DECOR_RIGHT"
+        cat "$EFILE"
+    fi
+    echo "${DECOR_LEFT}EXIT$DECOR_RIGHT"
+    echo "$EXIT_CODE"
+fi
