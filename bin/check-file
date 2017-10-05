@@ -29,4 +29,6 @@ if ! "$RUN_FILE" "$@" > "$OUT"; then
     exit 2
 fi
 diff -u "$FILE" "$OUT"
+EXIT_CODE=$?
 rm "$OUT"
+exit $EXIT_CODE

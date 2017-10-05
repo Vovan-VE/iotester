@@ -97,8 +97,12 @@ fi
 
     while read -u $FD DIR COMMAND; do
         [[ -n "$DIR" ]] || continue
-        if ! find "$DIR" -type f -name '*.io' -exec "$OPERATION" {} $COMMAND ';' ; then
-            echo "$(basename "$0"): find failed in '$DIR'" >&2
+        find "$DIR" -type f -name '*.io' -print0 | xargs -0 -n1 -I {} "$OPERATION" {} $COMMAND
+        EXIT_CODE="$?"
+        if [ 0 != $EXIT_CODE ]; then
+            if [ '123' != "$EXIT_CODE" ]; then
+                echo "$(basename "$0"): xargs exit code is $EXIT_CODE in '$DIR'" >&2
+            fi
             exit 1
         fi
     done
