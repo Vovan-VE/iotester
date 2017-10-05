@@ -1,0 +1,9 @@
+language: bash
+sudo: false
+
+# branches:
+#   only:
+#     - master
+
+script:
+  - bin/iotester -c tests/iotester.conf
