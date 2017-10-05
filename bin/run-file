@@ -26,18 +26,18 @@ if [ '-' = "$FILE" ]; then
     IFILE="./$IFILE"
     EFILE="./$EFILE"
 elif ! exec {FD}<"$FILE" ; then
-    echo "$(basename "$0"): cannot read file '$FILE'" >&2
+    echo "$(basename "$0"): cannot read file" >&2
     exit 1
 fi
 
 if ! echo -n '' > "$IFILE"; then
     echo "$(basename "$0"): cannot create/erase input temp file '$IFILE'" >&2
-    exit 1
+    exit 2
 fi
 trap 'rm -f "$IFILE"' 0 1 2 15
 if ! echo -n '' > "$EFILE"; then
     echo "$(basename "$0"): cannot create/erase input temp file '$EFILE'" >&2
-    exit 1
+    exit 2
 fi
 trap 'rm -f "$IFILE" "$EFILE"' 0 1 2 15
 
@@ -54,7 +54,7 @@ while IFS='' read -r -u $FD LINE; do
     if [ -z "$IN_SECTION" ]; then
         # could not use just back reference to \1
         if ! [[ "$LINE" =~ ^($RE_DECOR_CHARS+\ *)IN(\ *$RE_DECOR_CHARS+)$ ]]; then
-            echo "$(basename "$0"): cannot detect IN section header on first line - '$FILE'" >&2
+            echo "$(basename "$0"): cannot detect IN section header on first line" >&2
             exit 1
         fi
         DECOR_LEFT="${BASH_REMATCH[1]}"
@@ -66,20 +66,15 @@ while IFS='' read -r -u $FD LINE; do
         case "$SECTION" in
             (IN)
                 if [ IN = "$IN_SECTION" ]; then
-                    echo "$(basename "$0"): duplicate IN section in '$FILE'" >&2
+                    echo "$(basename "$0"): duplicate IN section" >&2
                     exit 1
                 fi
-                if [ -n "$IN_SECTION" ]; then
-                    echo "$(basename "$0"): section IN must be first - '$FILE'" >&2
-                    exit 1
-                fi
-
                 WAS_INPUT_HIT=1
                 ;;
             (OUT|ERR|EXIT)
                 ;;
             (*)
-                echo "$(basename "$0"): unknown section $SECTION - '$FILE'" >&2
+                echo "$(basename "$0"): unknown section $SECTION" >&2
                 exit 1
                 ;;
         esac
@@ -94,7 +89,7 @@ while IFS='' read -r -u $FD LINE; do
     else
         case "$IN_SECTION" in
             ('')
-                echo "$(basename "$0"): text out of a section - '$FILE'" >&2
+                echo "$(basename "$0"): text out of a section" >&2
                 exit 1
                 ;;
             (IN)
@@ -110,7 +105,7 @@ if [ '0' != $FD ]; then
 fi
 
 if [ -z "$WAS_INPUT_HIT" ]; then
-    echo "$(basename "$0"): no IN section - '$FILE'" >&2
+    echo "$(basename "$0"): no IN section" >&2
     exit 1
 fi
 

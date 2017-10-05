@@ -23,7 +23,7 @@ FILE="$1"
 NEW="$FILE.$$.new.tmp~"
 OLD="$FILE.$$.old.tmp~"
 
-trap 'rm -f "$NEW" "$OLD"; exit 1' 1 2 15
+trap 'rm -f "$NEW" "$OLD"' 0 1 2 15
 
 if "$RUN_FILE" "$@" > "$NEW" ; then
     cp "$FILE" "$OLD"
@@ -33,5 +33,3 @@ else
     echo "$(basename "$0"): $RUN_FILE_BASE failed - '$FILE' was not changed" >&2
     exit 1
 fi
-
-rm -f "$NEW" "$OLD"

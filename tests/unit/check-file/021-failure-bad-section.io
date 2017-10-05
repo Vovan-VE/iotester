@@ -4,10 +4,8 @@ lorem
 ipsum
 ---- WHAT ----
 ======== OUT ========
----- IN ----
-lorem
-ipsum
 ======== ERR ========
 run-file: unknown section WHAT
+check-file: run-file failed
 ======== EXIT ========
-1
+2

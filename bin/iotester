@@ -4,6 +4,7 @@
 
 DEFAULT_CONFIG_FILE=./iotester.conf
 CONFIG_FILE="$DEFAULT_CONFIG_FILE"
+STATUS_ACTION='All tests passed successfully'
 OPERATION_BASE=check-file
 
 if ! options=$(getopt -u -o hc:u -l help,config:,update -- "$@") ; then
@@ -19,6 +20,7 @@ while [ $# -gt 0 ]; do
             ;;
 
         (-u|--update)
+            STATUS_ACTION='All test files was successfully updated'
             OPERATION_BASE=update-file
             ;;
 
@@ -80,7 +82,7 @@ THIS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"; pwd )"
 OPERATION="$THIS_DIR/$OPERATION_BASE"
 
 if ! [ -f "$CONFIG_FILE" ]; then
-    echo "$(basename "$0"): config not found '$FILE'" >&2
+    echo "$(basename "$0"): config not found '$CONFIG_FILE'" >&2
     exit 1
 fi
 
@@ -89,14 +91,15 @@ fi
     WORK_DIR="$( cd "$( dirname "$CONFIG_FILE" )"; pwd )"
 
     if ! exec {FD}<"$CONFIG_FILE" ; then
-        echo "$(basename "$0"): cannot read config '$FILE'" >&2
+        echo "$(basename "$0"): cannot read config '$CONFIG_FILE'" >&2
         exit 1
     fi
 
     cd "${WORK_DIR:-.}"
 
     while read -u $FD DIR COMMAND; do
-        [[ -n "$DIR" ]] || continue
+        [[ -z "$DIR" || "$DIR" =~ ^'#' ]] && continue
+
         find "$DIR" -type f -name '*.io' -print0 | xargs -0 -n1 -I {} "$OPERATION" {} $COMMAND
         EXIT_CODE="$?"
         if [ 0 != $EXIT_CODE ]; then
@@ -109,3 +112,5 @@ fi
 
     exec {FD}<&-
 ) || exit $?
+
+echo "$STATUS_ACTION"

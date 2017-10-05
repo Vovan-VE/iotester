@@ -1,13 +1,11 @@
 ======== IN ========
----- IN ----
+----IN----
 lorem
 ipsum
----- WHAT ----
+----IN----
 ======== OUT ========
----- IN ----
-lorem
-ipsum
 ======== ERR ========
-run-file: unknown section WHAT
+run-file: duplicate IN section
+check-file: run-file failed
 ======== EXIT ========
-1
+2

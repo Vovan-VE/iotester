@@ -8,6 +8,6 @@ ipsum
 lorem
 ipsum
 ======== ERR ========
-run-file: duplicate IN section in '-'
+run-file: duplicate IN section
 ======== EXIT ========
 1
