@@ -6,7 +6,7 @@ sit amet
 ----OUT----
 sit amet
 lorem ipsum
-unexpected output line
+errornously expected
 foo bar
 ======== OUT ========
 --- expected
@@ -15,7 +15,7 @@ foo bar
  ----OUT----
  sit amet
  lorem ipsum
--unexpected output line
+-errornously expected
  foo bar
 ======== EXIT ========
 1
