@@ -121,4 +121,5 @@ fi
     exec {FD}<&-
 ) || exit $?
 
+[[ -n "$DO_PRINT" ]] && echo
 echo "$STATUS_ACTION"
