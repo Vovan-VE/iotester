@@ -40,7 +40,7 @@ Description:
 
     Runs all tests given by config.
 
-    Each path givem from a config is searched for *.io files, each of which is
+    Each path givem from a config is searched for *.t files, each of which is
     processed with the command.
 
     See CONFIG below.
@@ -54,7 +54,7 @@ Options
         Print filename before processing.
 
     -u, --update
-        By default each *.io file is processed with chech-file tool to check
+        By default each *.t file is processed with chech-file tool to check
         if test passes. This option allows you to use update-file tool to update
         test files with actual results.
 
@@ -108,7 +108,7 @@ fi
     while read -u $FD DIR COMMAND; do
         [[ -z "$DIR" || "$DIR" =~ ^'#' ]] && continue
 
-        find "$DIR" -type f -name '*.io' -print0 | xargs -0 -n1 -I {} "$OPERATION" ${DO_PRINT:+ -p} -- {} $COMMAND
+        find "$DIR" -type f -name '*.t' -print0 | xargs -0 -n1 -I {} "$OPERATION" ${DO_PRINT:+ -p} -- {} $COMMAND
         EXIT_CODE="$?"
         if [ 0 != $EXIT_CODE ]; then
             if [ '123' != "$EXIT_CODE" ]; then

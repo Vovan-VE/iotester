@@ -22,7 +22,7 @@ while [ $# -gt 0 ]; do
             read -r -d '' USAGE <<USAGE
 Usage:
 
-    $(basename "$0") [options] [--] file.io cmd [args]
+    $(basename "$0") [options] [--] file cmd [args]
     $(basename "$0") --help
 
 Description:

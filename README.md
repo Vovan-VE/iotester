@@ -10,7 +10,7 @@ Each test file contains `IN` section to pass to stdin, `OUT` section with
 expected output to stdout, optional `ERR` section with expected output to stderr
 and `EXIT` section for expected failure status.
 
-Test files must be named `*.io` and placed somewhere under directories provided
+Test files must be named `*.t` and placed somewhere under directories provided
 by config.
 
 
