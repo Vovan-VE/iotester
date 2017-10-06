@@ -6,8 +6,9 @@ DEFAULT_CONFIG_FILE=./iotester.conf
 CONFIG_FILE="$DEFAULT_CONFIG_FILE"
 STATUS_ACTION='All tests passed successfully'
 OPERATION_BASE=check-file
+DO_PRINT=''
 
-if ! options=$(getopt -u -o hc:u -l help,config:,update -- "$@") ; then
+if ! options=$(getopt -u -o hc:pu -l help,config:,print,update -- "$@") ; then
     exit 1
 fi
 
@@ -17,6 +18,10 @@ while [ $# -gt 0 ]; do
         (-c|--config)
             shift
             CONFIG_FILE="$1"
+            ;;
+
+        (-p|--print)
+            DO_PRINT=1
             ;;
 
         (-u|--update)
@@ -44,6 +49,9 @@ Options
 
     -c FILE, --config=FILE
         Use this config file. By default '$DEFAULT_CONFIG_FILE' is used.
+
+    -p, --print
+        Print filename before processing.
 
     -u, --update
         By default each *.io file is processed with chech-file tool to check
@@ -100,7 +108,7 @@ fi
     while read -u $FD DIR COMMAND; do
         [[ -z "$DIR" || "$DIR" =~ ^'#' ]] && continue
 
-        find "$DIR" -type f -name '*.io' -print0 | xargs -0 -n1 -I {} "$OPERATION" {} $COMMAND
+        find "$DIR" -type f -name '*.io' -print0 | xargs -0 -n1 -I {} "$OPERATION" ${DO_PRINT:+ -p} -- {} $COMMAND
         EXIT_CODE="$?"
         if [ 0 != $EXIT_CODE ]; then
             if [ '123' != "$EXIT_CODE" ]; then

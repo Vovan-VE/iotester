@@ -1,16 +1,54 @@
 #!/bin/bash
 
-# Usage: update-file file.io cmd [args]
-#
-# Updates the file with the new results `cmd [args]`. Section IN from the file
-# will be passed to `cmd` stdin.
-# This program is needed to update files with respect to actual results.
-#
 # The concept of this program is familar with `tush-bless` from Tush merged with
 # its `overwrite` program.
 # <https://github.com/darius/tush>
 # The differense is the format of processing files.
 
+DO_PRINT=''
+
+if ! options=$(getopt -u -o hp -l help,print -- "$@") ; then
+    exit 1
+fi
+
+set -- $options
+while [ $# -gt 0 ]; do
+    case "$1" in
+        (-p|--print)
+            DO_PRINT=1
+            ;;
+
+        (-h|--help)
+            read -r -d '' USAGE <<USAGE
+Usage:
+
+    $(basename "$0") [options] [--] file.io cmd [args]
+    $(basename "$0") --help
+
+Description:
+
+    Updates the file with the new results `cmd [args]`. Section IN from the file
+    will be passed to `cmd` stdin.
+    This program is needed to update files with respect to actual results.
+
+Options
+
+    -p, --print
+        Print filename before processing.
+
+USAGE
+            echo "$USAGE"
+            exit
+            ;;
+
+        (--) shift; break;;
+        (-*) echo "$(basename "$0"): unrecognized option $1" >&2; exit 1;;
+        (*)  break;;
+    esac
+    shift
+done
+
+# rest args
 case $# in
     (0|1) echo "Usage: $(basename "$0") file cmd [args]" >&2; exit 2;;
 esac
@@ -22,6 +60,8 @@ RUN_FILE="$THIS_DIR/$RUN_FILE_BASE"
 FILE="$1"
 NEW="$FILE.$$.new.tmp~"
 OLD="$FILE.$$.old.tmp~"
+
+[[ -n "$DO_PRINT" ]] && echo "$FILE"
 
 trap 'rm -f "$NEW" "$OLD"' 0 1 2 15
 

@@ -6,4 +6,4 @@ sudo: false
 #     - master
 
 script:
-  - bin/iotester -c tests/iotester.conf
+  - bin/iotester -c tests/iotester.conf -p
