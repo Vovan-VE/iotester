@@ -1,7 +1,7 @@
 IO Tester
 =========
 
-![Build status](https://travis-ci.org/Vovan-VE/iotester.svg)
+[![Build status](https://travis-ci.org/Vovan-VE/iotester.svg)](https://travis-ci.org/Vovan-VE/iotester)
 
 Basic idea of tests as same as in [Tush][]. This project just use different
 format for test files.
