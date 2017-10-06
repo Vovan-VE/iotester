@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Usage: run-file file.io cmd [args]
+# Usage: run-file file cmd [args]
 #
 # Runs `cmd [args]` passing to its stdin content of IN section from the file.
 # Outputs same IN section from the file with OUT, ERR and EXIT sections
