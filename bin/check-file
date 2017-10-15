@@ -69,10 +69,22 @@ if [ '-' = "$FILE" ]; then
     set -- "$FILE" "$@"
 fi
 
-trap 'rm "$OUT"; [[ -n "$IN" ]] && rm "$IN"' 0 1 2 15
+function cleanup {
+    rm "$OUT"
+    [[ -n "$IN" ]] && rm "$IN"
+}
+
+trap '
+    EXIT_CODE=$?
+    cleanup
+    exit $EXIT_CODE
+' 1 2 15
 
 if ! "$RUN_FILE" "$@" > "$OUT"; then
     echo "$(basename "$0"): $RUN_FILE_BASE failed" >&2
     exit 2
 fi
 diff --label expected --label actual -u "$FILE" "$OUT"
+EXIT_CODE=$?
+cleanup
+exit $EXIT_CODE
