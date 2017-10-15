@@ -85,5 +85,6 @@ if ! "$RUN_FILE" "$@" > "$OUT"; then
     exit 2
 fi
 diff --label expected --label actual -u "$FILE" "$OUT"
-
+EXIT_CODE=$?
 cleanup
+exit $EXIT_CODE
