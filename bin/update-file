@@ -62,7 +62,11 @@ NEW="$(mktemp)"
 
 [[ -n "$DO_PRINT" ]] && echo "$FILE"
 
-trap 'rm -f "$NEW"' 0 1 2 15
+trap '
+    EXIT_CODE=$?
+    rm -f "$NEW"
+    exit $EXIT_CODE
+' 0 1 2 15
 
 if "$RUN_FILE" "$@" > "$NEW" ; then
     trap '' 1 2 15
