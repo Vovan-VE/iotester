@@ -3,8 +3,20 @@ IO Tester
 
 [![Build status](https://travis-ci.org/Vovan-VE/iotester.svg)](https://travis-ci.org/Vovan-VE/iotester)
 
-Basic idea of tests as same as in [Tush][]. This project just use different
-format for test files.
+Basic idea of tests as same as in [Tush][]. This project uses a different
+format for test files and it is designed to test only one program run by each
+test file.
+
+So, here is example test file to test `cat` without arguments:
+
+```
+---- IN ----
+lorem ipsum
+dolor
+---- OUT ----
+lorem ipsum
+dolor
+```
 
 Each test file contains `IN` section to pass to stdin, `OUT` section with
 expected output to stdout, optional `ERR` section with expected output to stderr
@@ -63,7 +75,7 @@ example `====< IN >====`).
 Other section heads **must** use exactly the same decorators with same
 whitespaces arount the `NAME` as `IN` section uses.
 
-All lines other the section head forms content for the section which they goes
+All lines other than section head forms content for the section which they goes
 under.
 
 Section `IN` is required even in case of empty input.
@@ -104,6 +116,8 @@ Expected output to stderr
 ----EXIT----
 2
 ```
+
+See also [test files](./tests/) as examples. This project is testing by itself.
 
 
 License
