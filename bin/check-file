@@ -59,13 +59,12 @@ RUN_FILE="$THIS_DIR/$RUN_FILE_BASE"
 
 FILE="$1"
 IN=''
-OUT="$FILE.$$.actual.tmp~"
+OUT="$(mktemp)"
 [[ -n "$DO_PRINT" ]] && echo "$FILE"
 if [ '-' = "$FILE" ]; then
-    FILE="./-.$$.src.tmp~"
+    FILE="$(mktemp)"
     IN="$FILE"
     cat > "$FILE"
-    OUT="./$OUT"
     shift
     set -- "$FILE" "$@"
 fi

@@ -18,27 +18,17 @@ esac
 
 FILE="$1"
 shift
-IFILE="$FILE.$$.in.tmp~"
-EFILE="$FILE.$$.err.tmp~"
 
 if [ '-' = "$FILE" ]; then
     FD=0
-    IFILE="./$IFILE"
-    EFILE="./$EFILE"
 elif ! exec {FD}<"$FILE" ; then
     echo "$(basename "$0"): cannot read file" >&2
     exit 1
 fi
 
-if ! echo -n '' > "$IFILE"; then
-    echo "$(basename "$0"): cannot create/erase input temp file '$IFILE'" >&2
-    exit 2
-fi
-trap 'rm -f "$IFILE"' 0 1 2 15
-if ! echo -n '' > "$EFILE"; then
-    echo "$(basename "$0"): cannot create/erase input temp file '$EFILE'" >&2
-    exit 2
-fi
+IFILE="$(mktemp)"
+EFILE="$(mktemp)"
+
 trap 'rm -f "$IFILE" "$EFILE"' 0 1 2 15
 
 RE_DECOR_CHARS='[^[:alnum:][:space:]]'

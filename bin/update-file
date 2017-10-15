@@ -58,15 +58,13 @@ RUN_FILE_BASE=run-file
 RUN_FILE="$THIS_DIR/$RUN_FILE_BASE"
 
 FILE="$1"
-NEW="$FILE.$$.new.tmp~"
-OLD="$FILE.$$.old.tmp~"
+NEW="$(mktemp)"
 
 [[ -n "$DO_PRINT" ]] && echo "$FILE"
 
-trap 'rm -f "$NEW" "$OLD"' 0 1 2 15
+trap 'rm -f "$NEW"' 0 1 2 15
 
 if "$RUN_FILE" "$@" > "$NEW" ; then
-    cp "$FILE" "$OLD"
     trap '' 1 2 15
     cp "$NEW" "$FILE"
 else
