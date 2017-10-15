@@ -62,11 +62,15 @@ NEW="$(mktemp)"
 
 [[ -n "$DO_PRINT" ]] && echo "$FILE"
 
+function cleanup {
+    rm -f "$NEW"
+}
+
 trap '
     EXIT_CODE=$?
-    rm -f "$NEW"
+    cleanup
     exit $EXIT_CODE
-' 0 1 2 15
+' 1 2 15
 
 if "$RUN_FILE" "$@" > "$NEW" ; then
     trap '' 1 2 15
@@ -75,3 +79,5 @@ else
     echo "$(basename "$0"): $RUN_FILE_BASE failed - '$FILE' was not changed" >&2
     exit 1
 fi
+
+cleanup
