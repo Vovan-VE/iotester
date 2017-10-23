@@ -60,7 +60,8 @@ RUN_FILE="$THIS_DIR/$RUN_FILE_BASE"
 FILE="$1"
 IN=''
 OUT="$(mktemp)"
-[[ -n "$DO_PRINT" ]] && echo "$FILE"
+LABEL="$FILE"
+[[ -n "$DO_PRINT" ]] && echo "$LABEL"
 if [ '-' = "$FILE" ]; then
     FILE="$(mktemp)"
     IN="$FILE"
@@ -84,7 +85,7 @@ if ! "$RUN_FILE" "$@" > "$OUT"; then
     echo "$(basename "$0"): $RUN_FILE_BASE failed" >&2
     exit 2
 fi
-diff --label expected --label actual -u "$FILE" "$OUT"
+diff --label "expected: $LABEL" --label actual -u "$FILE" "$OUT"
 EXIT_CODE=$?
 cleanup
 exit $EXIT_CODE
