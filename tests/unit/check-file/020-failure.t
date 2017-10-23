@@ -9,7 +9,7 @@ lorem ipsum
 errornously expected
 foo bar
 ======== OUT ========
---- expected
+--- expected: -
 +++ actual
 @@ -5,5 +5,4 @@
  ----OUT----
